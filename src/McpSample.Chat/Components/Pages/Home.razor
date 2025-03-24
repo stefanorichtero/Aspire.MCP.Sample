@@ -1,0 +1,219 @@
+﻿@page "/"
+@using Azure
+@using Azure.Identity
+@using McpSample.BlazorChat.Services
+@using Microsoft.Extensions.AI
+@using Microsoft.Extensions.Configuration
+@using System.Text.RegularExpressions
+@using ModelContextProtocol.Client
+@using System.Text
+@inject IMcpClient McpClient
+@attribute [StreamRendering(true)]
+@rendermode InteractiveServer
+
+<PageTitle>Chat - MCP</PageTitle>
+
+<link href="css/Home.css" rel="stylesheet" />
+
+<div class="chat-container">
+    <div class="chat-bubble assistant">
+        <div class="chat-title">MCP Server:</div>
+        <div class="chat-content">
+            <p>Hi, I'm a client to test MCP, let's chat!</p>
+            <p>Check the Settings page to test the model using GitHub Models, Azure AI Foundry or to use custom settings.</p>
+        </div>
+    </div>
+    @foreach (var message in ChatMessages)
+    {
+        string messageContent = string.Empty;
+        string messageThink = string.Empty;
+        string messageTitle = string.Empty;
+        if (message.Role == ChatRole.User)
+        {
+            messageContent = message?.Text ?? string.Empty;
+            messageTitle = "User";
+        }
+        if (message.Role == ChatRole.Assistant)
+        {
+            messageContent = message?.Text ?? string.Empty;
+            messageTitle = "Assistant";
+
+        }
+        if (message.Role == ChatRole.System)
+        {
+            // we don't process and show the chat for the system message
+            //messageContent = systemMessage?.Content ?? string.Empty;
+        }
+
+        if (!string.IsNullOrEmpty(messageContent))
+        {
+            <div class="@(message.Role == ChatRole.User ? "chat-bubble user" : "chat-bubble assistant")">
+                <div class="chat-title">@messageTitle:</div>
+                <div class="chat-content">
+                    @messageContent
+                    @if (message.Role == ChatRole.Assistant && !string.IsNullOrEmpty(messageThink))
+                    {
+                        <details>
+                            <summary class="think-summary">Show Think Process</summary>
+                            <div class="think-content">@messageThink</div>
+                        </details>
+                    }
+                </div>
+            </div>
+        }
+    }
+</div>
+
+@if (isLoading)
+{
+    <div class="loading-container">
+        <div class="loading-ring"></div>
+    </div>
+}
+
+<div class="chat-input-container">
+    <input type="text" @bind="userQuestion" placeholder="Ask a question..." class="chat-input" />
+    <button @onclick="AskQuestion" type="submit" class="chat-button">Chat</button>
+</div>
+
+@if (!string.IsNullOrEmpty(errorDetails))
+{
+    <div class="error-container">
+        <div class="error-title">Error:</div>
+        <div class="error-content">@errorDetails</div>
+    </div>
+}
+
+@code {
+    private bool isLoading = false;
+    private string? chatResponse;
+    private string userQuestion = string.Empty;
+    private string errorDetails = string.Empty;
+    private Microsoft.Extensions.AI.IChatClient? client;
+    private string apiKey = string.Empty;
+    private string endpoint = string.Empty;
+    private string tenantId = string.Empty;
+    private string deploymentName = "DeepSeek-R1";
+    [Inject] private IConfiguration Configuration { get; set; } = default!;
+    [Inject] private ILogger<Program> Logger { get; set; } = default!;
+    private IList<Microsoft.Extensions.AI.ChatMessage> ChatMessages = new List<Microsoft.Extensions.AI.ChatMessage>();
+
+    protected override async void OnInitialized()
+    {
+        CreateChat();
+
+        // init messages
+        ChatMessages.Add(new ChatMessage(ChatRole.System, "You are a helpful assistant. You always replies using text and emojis. You never generate HTML or Markdown."));
+
+        // Get all available tools
+        var sbTools = new StringBuilder();
+        sbTools.AppendLine("Tools available:");
+        var tools = await McpClient.GetAIFunctionsAsync();
+        foreach (var tool in tools)
+        {
+            sbTools.AppendLine($"  {tool}");
+        }
+        ChatMessages.Add(new ChatMessage(ChatRole.Assistant, sbTools.ToString()));
+    }
+
+    private async Task AskQuestion(MouseEventArgs e)
+    {
+        try
+        {
+            isLoading = true;
+            StateHasChanged();
+
+            if (client == null)
+            {
+                Logger.LogInformation("Chat component is not initialized.");
+                return;
+            }
+
+            Logger.LogInformation($"Add user question: {userQuestion}");
+            ChatMessages.Add(new ChatMessage(ChatRole.User, userQuestion));
+
+            // Clear the userQuestion textbox
+            userQuestion = string.Empty;
+
+            
+            var response = await client.GetResponseAsync(ChatMessages);
+            Logger.LogInformation($"Model Response: {response}");
+            chatResponse = response.Text;
+            ChatMessages.Add(new ChatMessage(ChatRole.Assistant, chatResponse));
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while processing the chat request.");
+            errorDetails = ex.ToString();
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void CreateChat()
+    {
+        try
+        {
+            Logger.LogInformation("Initializing Chat component");
+
+            // read the settings from the configuration
+            endpoint = Configuration["endpoint"] ?? throw new ArgumentNullException("Endpoint");
+            apiKey = Configuration["apikey"] ?? string.Empty;
+            tenantId = Configuration["tenantid"] ?? string.Empty;
+            deploymentName = Configuration["deploymentname"] ?? "DeepSeek-R1";
+
+            Logger.LogInformation($"===================================================");
+            Logger.LogInformation($"Chat info - Endpoint: {endpoint} - DeploymentName: {deploymentName} - ApiKey length: {apiKey.Length}");
+
+            // validate if apiKey is provided and initialize the client
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                // check for localhost, that's mean ollama
+                if (endpoint.Contains("localhost", StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.LogInformation("Using localhost endpoint - Ollama");
+                    var ollamaEndpoint = new Uri(endpoint);
+                    var chatModel = "llama3.2";
+                    client = new OllamaChatClient(
+                        endpoint: ollamaEndpoint,
+                        modelId: chatModel)
+                        .AsBuilder()
+                        .UseFunctionInvocation()
+                        .Build();
+
+                }
+                else
+                {
+
+                    // Logger.LogInformation("Using DefaultAzureCredential");
+                    // var options = new DefaultAzureCredentialOptions();
+                    // if (!string.IsNullOrEmpty(tenantId))
+                    // {
+                    //     Logger.LogInformation($"Using TenantId: {tenantId}");
+                    //     options.TenantId = tenantId;
+                    // }
+                    // var credential = new DefaultAzureCredential(options);
+
+                    // client = new Microsoft.Extensions.AI.AzureAIInferenceChatClient()
+                    // );
+                }
+
+            }
+            else
+            {
+                Logger.LogInformation("Using ApiKey");
+                // client = new ChatCompletionsClient(endpoint: new Uri(endpoint), credential: new AzureKeyCredential(apiKey));
+            }
+            Logger.LogInformation($"===================================================");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "An error occurred while initializing the chat component.");
+            errorDetails = ex.ToString();
+        }
+    }
+}
