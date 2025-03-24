@@ -23,11 +23,20 @@
             <p>Hi, I'm a client to test MCP using @deploymentName, let's chat!</p>
             <p>Check the Settings page to test the model using GitHub Models, Ollama or Azure AI Foundry or to use custom settings.</p>
         </div>
+        <div class="chat-title">Current MVP Tools in the Server:</div>
+        <div class="chat-content">
+            <p>@GetMcpServerTools().ToString()</p>
+        </div>
+
+        
     </div>
     @foreach (var message in ChatMessages)
     {
         string messageContent = string.Empty;
         string messageTitle = string.Empty;
+        string functionResponse = string.Empty;
+        var functionCallId = string.Empty;
+
         messageContent = message?.Text ?? string.Empty;
 
         if (message.Role == ChatRole.User)
@@ -43,19 +52,27 @@
             messageContent = string.Empty;
         }
 
+        if (message.Role == ChatRole.Tool)
+        {
+            messageTitle = "Tool";
+            if (message.Contents.FirstOrDefault() is FunctionResultContent functionResult)
+            {
+                messageContent = "...";
+                functionResponse = functionResult.Result.ToString();
+                functionCallId = $"Call Id: {functionResult.CallId}";
+            }
+        }
+
         if (!string.IsNullOrEmpty(messageContent))
         {
             <div class="@(message.Role == ChatRole.User ? "chat-bubble user" : "chat-bubble assistant")">
                 <div class="chat-title">@messageTitle:</div>
                 <div class="chat-content">
                     @messageContent
-                    @if (message.Contents.Count > 0 &&
-                                message.Contents.FirstOrDefault() is FunctionResultContent functionResult)
+                    @if (!string.IsNullOrEmpty(functionResponse))
                     {
-                        var functionResponse = functionResult.Result.ToString();
-                        var functionCallId = $"Call Id: {functionResult.CallId}";
                         <details>
-                            <summary class="think-summary">Function Result</summary>
+                            <summary class="think-summary">Tool Result</summary>
                             <div class="think-content">@functionResponse</div>
                             <div class="think-content">@functionCallId</div>
                         </details>
@@ -104,18 +121,16 @@
     {
         CreateChat();
 
-        // init messages
-        ChatMessages.Add(new ChatMessage(ChatRole.System, "You are a helpful assistant. You always replies using text and emojis. You never generate HTML or Markdown."));
-
-        ChatMessages.Add(new ChatMessage(ChatRole.Assistant, await GetMcpServerTools()));        
+        // system message
+        ChatMessages.Add(new ChatMessage(ChatRole.System, "You are a helpful assistant. You always replies using text and emojis. You never generate HTML or Markdown. You only do what the user ask you to do. If you don't have a function to answer a question, you just answer que question"));
     }
 
-    private async Task<string> GetMcpServerTools()
+    private string GetMcpServerTools()
     {
         // Get all available tools
         var sbTools = new StringBuilder();
         sbTools.AppendLine("Tools available:");
-        tools = await McpClient.GetAIFunctionsAsync();
+        tools = McpClient.GetAIFunctionsAsync().GetAwaiter().GetResult();
         foreach (var tool in tools)
         {
             sbTools.AppendLine($"- [{tool}]");
@@ -142,28 +157,26 @@
             // Clear the userQuestion textbox
             userQuestion = string.Empty;
 
+            //List<ChatResponseUpdate> updates = [];
+            // await foreach (var update in client.GetStreamingResponseAsync(ChatMessages, new() { Tools = [.. tools] }))
+            // {
+            //     Logger.LogInformation(update.ToString());
 
-            //var response = await client.GetResponseAsync(ChatMessages, new() { Tools = [.. tools] });
-            List<ChatResponseUpdate> updates = [];
-            await foreach (var update in client.GetStreamingResponseAsync(ChatMessages, new() { Tools = [.. tools] }))
-            {
-                Logger.LogInformation(update.ToString());
+            //     if (update.Contents != null &&
+            //         update.Contents.Count > 0
+            //         && update.Contents.FirstOrDefault() is FunctionResultContent functionResult)
+            //     {
+            //         Logger.LogInformation($"\t>> Function Result: {functionResult.Result}");
+            //         Logger.LogInformation($"\t>> Function CallId: {functionResult.CallId}");
+            //     }
 
-                if (update.Contents != null &&
-                    update.Contents.Count > 0
-                    && update.Contents.FirstOrDefault() is FunctionResultContent functionResult)
-                {
-                    Logger.LogInformation($"\t>> Function Result: {functionResult.Result}");
-                    Logger.LogInformation($"\t>> Function CallId: {functionResult.CallId}");
-                }
+            //     updates.Add(update);
+            // }
+            // ChatMessages.AddMessages(updates);
 
-                updates.Add(update);
-            }
-            ChatMessages.AddMessages(updates);
-
-            // Logger.LogInformation($"Model Response: {response}");
-            // chatResponse = response.Text;
-            // ChatMessages.Add(new ChatMessage(ChatRole.Assistant, chatResponse));
+            var response = await client.GetResponseAsync(ChatMessages, new() { Tools = [.. tools] });
+            Logger.LogInformation($"Model Response: {response}");
+            ChatMessages.AddMessages(response);
             StateHasChanged();
         }
         catch (Exception ex)
