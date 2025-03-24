@@ -3,7 +3,6 @@ using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Configuration;
 using ModelContextProtocol.Protocol.Transport;
-using ModelContextProtocol.Protocol.Types;
 
 var builder = WebApplication.CreateBuilder(args);
 
