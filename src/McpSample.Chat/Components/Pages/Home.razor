@@ -32,6 +32,7 @@
     </div>
     @foreach (var message in ChatMessages)
     {
+        string chatBubbleClass = string.Empty;
         string messageContent = string.Empty;
         string messageTitle = string.Empty;
         string functionResponse = string.Empty;
@@ -42,10 +43,12 @@
         if (message.Role == ChatRole.User)
         {
             messageTitle = "User";
+            chatBubbleClass = "chat-bubble user";
         }
         if (message.Role == ChatRole.Assistant)
         {
             messageTitle = "Assistant";
+            chatBubbleClass = "chat-bubble assistant";
         }
         if (message.Role == ChatRole.System)
         {
@@ -55,17 +58,18 @@
         if (message.Role == ChatRole.Tool)
         {
             messageTitle = "Tool";
+            messageContent = string.Empty;
+            chatBubbleClass = "chat-bubble tool";
             if (message.Contents.FirstOrDefault() is FunctionResultContent functionResult)
             {
-                messageContent = "...";
                 functionResponse = functionResult.Result.ToString();
                 functionCallId = $"Call Id: {functionResult.CallId}";
             }
         }
 
-        if (!string.IsNullOrEmpty(messageContent))
+        if (!string.IsNullOrEmpty(messageContent) || messageTitle == "Tool")
         {
-            <div class="@(message.Role == ChatRole.User ? "chat-bubble user" : "chat-bubble assistant")">
+            <div class="@chatBubbleClass">
                 <div class="chat-title">@messageTitle:</div>
                 <div class="chat-content">
                     @messageContent
