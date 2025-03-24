@@ -26,7 +26,7 @@ builder.Services.AddLogging(loggingBuilder =>
 
 builder.Services.AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Program>>());
 
-// add MCP server
+// add MCP client
 builder.Services.AddSingleton<IMcpClient>(sp =>
 {
     McpClientOptions mcpClientOptions = new() 
