@@ -41,12 +41,13 @@
 }
 
 .chat-bubble.tool {
-    background-color: #2e7d32; /* A deep green for better distinction */
-    color: #ffffff; /* Pure white for better text contrast */
+    background-color: #b0bec5; /* A blue-gray that's similar to assistant but distinct */
+    color: #263238; /* Dark blue-gray text for good contrast */
     align-self: flex-start;
-    border-left: 4px solid #1b5e20; /* Darker shade for the border */
+    border-left: 4px solid #78909c; /* Slightly darker blue-gray for the border */
     font-weight: 500; /* Slightly bolder text for better readability */
 }
+
 
 
 .chat-input-container {

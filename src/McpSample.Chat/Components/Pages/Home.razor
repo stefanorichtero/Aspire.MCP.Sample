@@ -23,12 +23,15 @@
             <p>Hi, I'm a client to test MCP using @deploymentName, let's chat!</p>
             <p>Check the Settings page to test the model using GitHub Models, Ollama or Azure AI Foundry or to use custom settings.</p>
         </div>
-        <div class="chat-title">Current MVP Tools in the Server:</div>
+        <div class="chat-title">Current MCP Tools in the Server:</div>
         <div class="chat-content">
-            <p>@GetMcpServerTools().ToString()</p>
+            @foreach (var tool in tools)
+            {
+                <p>- [@tool]</p>
+            }
         </div>
 
-        
+
     </div>
     @foreach (var message in ChatMessages)
     {
@@ -70,18 +73,22 @@
         if (!string.IsNullOrEmpty(messageContent) || messageTitle == "Tool")
         {
             <div class="@chatBubbleClass">
-                <div class="chat-title">@messageTitle:</div>
-                <div class="chat-content">
-                    @messageContent
-                    @if (!string.IsNullOrEmpty(functionResponse))
-                    {
-                        <details>
-                            <summary class="think-summary">Tool Result</summary>
-                            <div class="think-content">@functionResponse</div>
-                            <div class="think-content">@functionCallId</div>
-                        </details>
-                    }
-                </div>
+                @if (string.IsNullOrEmpty(functionResponse))
+                {
+                    <div class="chat-title">@messageTitle</div>
+                    <div class="chat-content">
+                        @messageContent
+                    </div>
+
+                }
+                else
+                {
+                    <details>
+                        <summary class="think-summary">Tool Result</summary>
+                        <div class="think-content">@functionResponse</div>
+                        <div class="think-content">@functionCallId</div>
+                    </details>
+                }
             </div>
         }
     }
@@ -125,6 +132,9 @@
     {
         CreateChat();
 
+        // get mcp server tools
+        tools = McpClient.GetAIFunctionsAsync().GetAwaiter().GetResult();
+
         // system message
         ChatMessages.Add(new ChatMessage(ChatRole.System, "You are a helpful assistant. You always replies using text and emojis. You never generate HTML or Markdown. You only do what the user ask you to do. If you don't have a function to answer a question, you just answer que question"));
     }
@@ -160,23 +170,6 @@
 
             // Clear the userQuestion textbox
             userQuestion = string.Empty;
-
-            //List<ChatResponseUpdate> updates = [];
-            // await foreach (var update in client.GetStreamingResponseAsync(ChatMessages, new() { Tools = [.. tools] }))
-            // {
-            //     Logger.LogInformation(update.ToString());
-
-            //     if (update.Contents != null &&
-            //         update.Contents.Count > 0
-            //         && update.Contents.FirstOrDefault() is FunctionResultContent functionResult)
-            //     {
-            //         Logger.LogInformation($"\t>> Function Result: {functionResult.Result}");
-            //         Logger.LogInformation($"\t>> Function CallId: {functionResult.CallId}");
-            //     }
-
-            //     updates.Add(update);
-            // }
-            // ChatMessages.AddMessages(updates);
 
             var response = await client.GetResponseAsync(ChatMessages, new() { Tools = [.. tools] });
             Logger.LogInformation($"Model Response: {response}");
