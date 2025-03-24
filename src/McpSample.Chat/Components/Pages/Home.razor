@@ -18,9 +18,9 @@
 
 <div class="chat-container">
     <div class="chat-bubble assistant">
-        <div class="chat-title">MCP Server using @deploymentName:</div>
+        <div class="chat-title">MCP Server using <b>@deploymentName</b></div>
         <div class="chat-content">
-            <p>Hi, I'm a client to test MCP using @deploymentName, let's chat!</p>
+            <p>Hi, I'm a client to test MCP using <b>@deploymentName</b>, let's chat!</p>
             <p>Check the Settings page to test the model using GitHub Models, Ollama or Azure AI Foundry or to use custom settings.</p>
         </div>
         <div class="chat-title">Current MCP Tools in the Server:</div>
@@ -37,6 +37,7 @@
     {
         string chatBubbleClass = string.Empty;
         string messageContent = string.Empty;
+        string messageThink = string.Empty;
         string messageTitle = string.Empty;
         string functionResponse = string.Empty;
         var functionCallId = string.Empty;
@@ -52,6 +53,14 @@
         {
             messageTitle = "Assistant";
             chatBubbleClass = "chat-bubble assistant";
+
+            // in case of using a reasoning model
+            var match = Regex.Match(messageContent, @"<think>(.*?)<\/think>(.*)", RegexOptions.Singleline);
+            if (match.Success)
+            {
+                messageThink = match.Groups[1].Value.Trim();
+                messageContent = match.Groups[2].Value.Trim();
+            }
         }
         if (message.Role == ChatRole.System)
         {
@@ -78,8 +87,14 @@
                     <div class="chat-title">@messageTitle</div>
                     <div class="chat-content">
                         @messageContent
+                        @if (!string.IsNullOrEmpty(messageThink))
+                        {
+                            <details>
+                                <summary class="think-summary">Show Think Process</summary>
+                                <div class="think-content">@messageThink</div>
+                            </details>
+                        }
                     </div>
-
                 }
                 else
                 {
