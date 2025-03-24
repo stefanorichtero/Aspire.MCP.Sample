@@ -9,6 +9,7 @@ public static class WeatherTool
     [McpTool, Description("Returns the current weather for a specific city")]
     public static string GetWeatherForCity(string cityName)
     {
+        Console.WriteLine("==========================");
         Console.WriteLine($"Function Start WeatherTool: GetWeatherForCity called with cityName: {cityName}");
 
         // generate a random weather report and return the result
@@ -21,6 +22,7 @@ public static class WeatherTool
 
         Console.WriteLine("Function report: " + report);
         Console.WriteLine($"Function End WeatherTool: GetWeatherForCity called with cityName: {cityName}");
+        Console.WriteLine("==========================");
 
         return report;
     }
