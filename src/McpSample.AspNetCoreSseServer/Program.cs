@@ -1,5 +1,4 @@
 using ModelContextProtocol;
-using AspNetCoreSseServer;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +12,7 @@ var app = builder.Build();
 
 // Initialize default endpoints
 app.MapDefaultEndpoints();
+app.UseHttpsRedirection();
 
 // map endpoints
 app.MapGet("/", () => $"Hello World! {DateTime.Now}");

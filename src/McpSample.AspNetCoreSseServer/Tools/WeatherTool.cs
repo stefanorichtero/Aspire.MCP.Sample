@@ -1,7 +1,7 @@
 ﻿using ModelContextProtocol.Server;
 using System.ComponentModel;
 
-namespace TestServerWithHosting.Tools;
+namespace McpSample.AspNetCoreSseServer;
 
 [McpToolType]
 public static class WeatherTool

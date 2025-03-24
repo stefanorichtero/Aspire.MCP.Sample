@@ -4,8 +4,6 @@ using ModelContextProtocol.Utils.Json;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Protocol.Transport;
 
-namespace AspNetCoreSseServer;
-
 public static class McpEndpointRouteBuilderExtensions
 {
     public static IEndpointConventionBuilder MapMcpSse(this IEndpointRouteBuilder endpoints)
