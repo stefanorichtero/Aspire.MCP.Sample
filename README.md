@@ -22,10 +22,14 @@ Check out this 5-minute video overview to see the project in action.
 ## Getting Started
 
 ### Prerequisites
+
 - .NET SDK 9.0 or later  
 - Visual Studio 2022 or Visual Studio code
+- LLM or SLM that supports function calling.
+	- [Azure AI Foundry](https://ai.azure.com) to run models in the cloud. IE: gpt-4o-mini
+	- [Ollama](https://ollama.com/) for running local models. Suggested: phi4-mini, llama3.2 or Qwq
 
-### Installation
+### Run locally
 
 1. Clone the repository:
 
@@ -39,6 +43,18 @@ Check out this 5-minute video overview to see the project in action.
    ```bash
    dotnet run
    ```
+
+1. In the Aspire Dashboard, navigate to the Blazor Chat client project.
+
+![Aspire Dashboard](./images/20AspireDashboard.png)
+
+1. In the Chat Settings page, define the model to be used. You choose to use models in Azure AI Foundry (suggested gpt-4o-mini), GitHub Models or locally with ollama (suggested llama3.2)
+
+![Chat Settings](./images/25ChatSettings.png)
+
+1. Now you can chat with the model. Everytime that one of the functions of the MCP server is called, the `Tool Result` section will be displayed in the chat.
+
+![Chat Demo](./images/28ChatDemo.png)
 
 ## Architecture Diagram
 
