@@ -6,6 +6,13 @@ Sample MCP Server and MCP client using Aspire.
 
 This sample demonstrates a Model Context Protocol (MCP) Server and client setup using Aspire. It showcases how to establish and manage MCP communication, using C# in a structured Aspire environment.
 
+### Quick Demo
+
+[![5-Minute Overview of the Project](https://img.youtube.com/vi/2holzbob1_I/0.jpg)](https://www.youtube.com/watch?v=2holzbob1_I)
+
+Check out this 5-minute video overview to see the project in action.
+
+
 ## Features
 
 - **MCP Server:** Implements an MCP server to manage client communication.
