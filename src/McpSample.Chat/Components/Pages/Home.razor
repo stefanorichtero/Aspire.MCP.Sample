@@ -25,10 +25,11 @@
         </div>
         <div class="chat-title">Current MCP Tools in the Server:</div>
         <div class="chat-content">
-            @foreach (var tool in tools)
-            {
-                <p>- <b>@tool.Name</b>: @tool.Description</p>
-            }
+            @if (tools is not null)
+                foreach (var tool in tools)
+                {
+                    <p>- <b>@tool.Name</b>: @tool.Description</p>
+                }
         </div>
 
 
