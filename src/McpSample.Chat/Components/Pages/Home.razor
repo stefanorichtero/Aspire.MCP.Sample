@@ -139,7 +139,7 @@
     private string apiKey = string.Empty;
     private string endpoint = string.Empty;
     private string deploymentName = "llama3.2";
-    private IList<AIFunction> tools = null!;
+    private IList<McpClientTool> tools = null!;
     [Inject] private IConfiguration Configuration { get; set; } = default!;
     [Inject] private ILogger<Program> Logger { get; set; } = default!;
     private IList<Microsoft.Extensions.AI.ChatMessage> ChatMessages = new List<Microsoft.Extensions.AI.ChatMessage>();
@@ -149,7 +149,7 @@
         CreateChat();
 
         // get mcp server tools
-        tools = await McpClient.GetAIFunctionsAsync();
+        tools = await McpClient.ListToolsAsync();
 
         // system message
         ChatMessages.Add(new ChatMessage(ChatRole.System, "You are a helpful assistant. You always replies using text and emojis. You never generate HTML or Markdown. You only do what the user ask you to do. If you don't have a function to answer a question, you just answer que question"));

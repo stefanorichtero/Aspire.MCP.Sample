@@ -7,7 +7,8 @@ builder.AddServiceDefaults();
 builder.Services.AddProblemDetails();
 
 // add MCP server
-builder.Services.AddMcpServer().WithTools();
+//builder.Services.AddMcpServer().WithTools();
+builder.Services.AddMcpServer().WithToolsFromAssembly();
 var app = builder.Build();
 
 // Initialize default endpoints
