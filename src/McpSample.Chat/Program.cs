@@ -31,17 +31,18 @@ builder.Services.AddSingleton<IMcpClient>(sp =>
     McpClientOptions mcpClientOptions = new() 
     { ClientInfo = new() { Name = "AspNetCoreSseClient", Version = "1.0.0" } };
 
-    HttpClient httpClient = new()
-    {
-        BaseAddress = new("https://localhost:7133/sse")  //"https +http://aspnetsseserver" + "/sse")
-    }; 
+    // can't use the service discovery for ["https +http://aspnetsseserver"]
+    // fix: read the environment value for the key 'services__aspnetsseserver__https__0' to get the url for the aspnet core sse server
+    var serviceName = "aspnetsseserver";
+    var name = $"services__{serviceName}__https__0";
+    var url = Environment.GetEnvironmentVariable(name) + "/sse";
 
     McpServerConfig mcpServerConfig = new()
     {
         Id = "AspNetCoreSse",
         Name = "AspNetCoreSse",
         TransportType = TransportTypes.Sse,
-        Location = httpClient.BaseAddress.ToString(),
+        Location = url
     };
 
     var mcpClient = McpClientFactory.CreateAsync(mcpServerConfig, mcpClientOptions).GetAwaiter().GetResult();
