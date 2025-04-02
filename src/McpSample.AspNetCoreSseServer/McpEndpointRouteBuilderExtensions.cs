@@ -25,7 +25,7 @@ public static class McpEndpointRouteBuilderExtensions
             try
             {
                 var transportTask = transport.RunAsync(cancellationToken: requestAborted);
-                await server.StartAsync(cancellationToken: requestAborted);
+                await server.RunAsync(cancellationToken: requestAborted);
                 await transportTask;
             }
             catch (OperationCanceledException) when (requestAborted.IsCancellationRequested)

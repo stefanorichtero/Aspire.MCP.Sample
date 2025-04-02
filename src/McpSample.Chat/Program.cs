@@ -1,7 +1,7 @@
 using McpSample.BlazorChat.Components;
 using Microsoft.Extensions.AI;
+using ModelContextProtocol;
 using ModelContextProtocol.Client;
-using ModelContextProtocol.Configuration;
 using ModelContextProtocol.Protocol.Transport;
 
 var builder = WebApplication.CreateBuilder(args);
