@@ -18,9 +18,9 @@
 
 <div class="chat-container">
     <div class="chat-bubble assistant">
-        <div class="chat-title">MCP Server using <b>@deploymentName</b></div>
+        <div class="chat-title">Chat with an MCP Server</div>
         <div class="chat-content">
-            <p>Hi, I'm a client to test MCP using <b>@deploymentName</b>, let's chat!</p>
+            <p>Hi, I'm a client to test MCP using a model <b>[@deploymentName]</b> with <b>[@clientMode]</b></p>
             <p>Check the Settings page to test the model using GitHub Models, Ollama or Azure AI Foundry or to use custom settings.</p>
         </div>
         <div class="chat-title">Current MCP Tools in the Server:</div>
@@ -31,9 +31,8 @@
                     <p>- <b>@tool.Name</b>: @tool.Description</p>
                 }
         </div>
-
-
     </div>
+
     @foreach (var message in ChatMessages)
     {
         string chatBubbleClass = string.Empty;
@@ -139,6 +138,7 @@
     private string apiKey = string.Empty;
     private string endpoint = string.Empty;
     private string deploymentName = "llama3.2";
+    private string clientMode = string.Empty;
     private IList<McpClientTool> tools = null!;
     [Inject] private IConfiguration Configuration { get; set; } = default!;
     [Inject] private ILogger<Program> Logger { get; set; } = default!;
@@ -208,6 +208,7 @@
             // check for localhost, that's mean ollama
             if (endpoint.Contains("localhost", StringComparison.OrdinalIgnoreCase))
             {
+                clientMode = "Ollama";
                 Logger.LogInformation("Using localhost endpoint - Ollama");
                 var ollamaEndpoint = new Uri(endpoint);
                 client = new OllamaChatClient(
@@ -221,7 +222,7 @@
             {
                 if (string.IsNullOrEmpty(apiKey))
                 {
-
+                    clientMode = "Azure with Default Credentials";
                     Logger.LogInformation("Using DefaultAzureCredential");
                     client = new AzureOpenAIClient(
                         new Uri(endpoint),
@@ -233,6 +234,15 @@
                 }
                 else
                 {
+                    // Check if it's GitHub Models
+                    if (endpoint.Contains("models.inference.ai.azure.com", StringComparison.OrdinalIgnoreCase))
+                    {
+                        clientMode = "GitHub Models";
+                    }
+                    else
+                    {
+                        clientMode = "Using Endpoint and ApiKey";
+                    }
 
                     Logger.LogInformation("Using ApiKey");
                     var azureClient =
@@ -242,7 +252,7 @@
                     client = azureClient.AsIChatClient(deploymentName)
                          .AsBuilder()
                          .UseFunctionInvocation()
-                         .Build(); ;
+                         .Build();
                 }
             }
             Logger.LogInformation($"===================================================");
@@ -253,4 +263,5 @@
             errorDetails = ex.ToString();
         }
     }
+
 }
