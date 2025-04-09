@@ -58,8 +58,7 @@ Check out this 5-minute video overview to see the project in action.
 
 ## Architecture Diagram
 
-**(WIP)**
-- High-level architecture diagram will be added soon.
+![Architecture Diagram](./images/30ArchitecturalDiagram.png)
 
 ## GitHub Codespaces
 
