@@ -4,10 +4,10 @@ using System.ComponentModel;
 namespace McpSample.AspNetCoreSseServer;
 
 [McpServerToolType]
-public static class Jokes
+public class Jokes
 {
     [McpServerTool, Description("Returns a joke about a specific topic")]
-    public static string GetJoke(string topic)
+    public string GetJoke(string topic)
     {
         Console.WriteLine("==========================");
         Console.WriteLine($"Function get joke with topic: {topic}");

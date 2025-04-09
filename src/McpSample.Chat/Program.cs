@@ -25,10 +25,9 @@ builder.Services.AddLogging(loggingBuilder =>
 
 builder.Services.AddSingleton<ILogger>(sp => sp.GetRequiredService<ILogger<Program>>());
 
-// add MCP client
 builder.Services.AddSingleton<IMcpClient>(sp =>
 {
-    McpClientOptions mcpClientOptions = new() 
+    McpClientOptions mcpClientOptions = new()
     { ClientInfo = new() { Name = "AspNetCoreSseClient", Version = "1.0.0" } };
 
     // can't use the service discovery for ["https +http://aspnetsseserver"]
@@ -37,15 +36,16 @@ builder.Services.AddSingleton<IMcpClient>(sp =>
     var name = $"services__{serviceName}__https__0";
     var url = Environment.GetEnvironmentVariable(name) + "/sse";
 
-    McpServerConfig mcpServerConfig = new()
+    SseClientTransportOptions sseTransportOptions = new()
     {
-        Id = "AspNetCoreSse",
-        Name = "AspNetCoreSse",
-        TransportType = TransportTypes.Sse,
-        Location = url
+        //Endpoint = new Uri("https+http://aspnetsseserver")
+        Endpoint = new Uri(url)
     };
 
-    var mcpClient = McpClientFactory.CreateAsync(mcpServerConfig, mcpClientOptions).GetAwaiter().GetResult();
+    SseClientTransport sseClientTransport = new(transportOptions: sseTransportOptions);
+
+    var mcpClient = McpClientFactory.CreateAsync(
+        sseClientTransport, mcpClientOptions).GetAwaiter().GetResult();
     return mcpClient;
 });
 

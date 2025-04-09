@@ -221,25 +221,28 @@
             {
                 if (string.IsNullOrEmpty(apiKey))
                 {
+
                     Logger.LogInformation("Using DefaultAzureCredential");
-                    client = new Azure.AI.Inference.ChatCompletionsClient(
-                        endpoint: new Uri(endpoint),
-                        credential: new DefaultAzureCredential())
-                        .AsChatClient()
+                    client = new AzureOpenAIClient(
+                        new Uri(endpoint),
+                        new DefaultAzureCredential())
+                        .AsChatClient(deploymentName)
                         .AsBuilder()
                         .UseFunctionInvocation()
                         .Build();
                 }
                 else
                 {
+
                     Logger.LogInformation("Using ApiKey");
-                    client = new Azure.AI.Inference.ChatCompletionsClient(
+                    var azureClient =
+                        new Azure.AI.Inference.ChatCompletionsClient(
                         endpoint: new Uri(endpoint),
-                        credential: new AzureKeyCredential(apiKey))
-                        .AsChatClient(deploymentName)
-                        .AsBuilder()
-                        .UseFunctionInvocation()
-                        .Build(); ;
+                        new AzureKeyCredential(apiKey));
+                    client = azureClient.AsIChatClient(deploymentName)
+                         .AsBuilder()
+                         .UseFunctionInvocation()
+                         .Build(); ;
                 }
             }
             Logger.LogInformation($"===================================================");
