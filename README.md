@@ -8,9 +8,13 @@ This sample demonstrates a Model Context Protocol (MCP) Server and client setup 
 
 ### Quick Demo
 
+Check out this 5-minute video overview to see the project in action.
+
 [![5-Minute Overview of the Project](https://img.youtube.com/vi/2holzbob1_I/0.jpg)](https://www.youtube.com/watch?v=2holzbob1_I)
 
-Check out this 5-minute video overview to see the project in action.
+Check out this 5-minute video overview to see how to deploy the solution to Azure, and how to consume the deployed MCP Server in Azure from Visual Studio Code.
+
+[![5-Minute Overview on how to deploy the solution to Azure](https://img.youtube.com/vi/subvIWlrzu4/0.jpg)](https://www.youtube.com/watch?v=subvIWlrzu4)
 
 
 ## Features
