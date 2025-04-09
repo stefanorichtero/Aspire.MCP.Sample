@@ -56,15 +56,15 @@ Check out this 5-minute video overview to see how to deploy the solution to Azur
 
 1. In the Aspire Dashboard, navigate to the Blazor Chat client project.
 
-![Aspire Dashboard](./images/20AspireDashboard.png)
+    ![Aspire Dashboard](./images/20AspireDashboard.png)
 
 1. In the Chat Settings page, define the model to be used. You choose to use models in Azure AI Foundry (suggested gpt-4o-mini), GitHub Models or locally with ollama (suggested llama3.2)
 
-![Chat Settings](./images/25ChatSettings.png)
+    ![Chat Settings](./images/25ChatSettings.png)
 
 1. Now you can chat with the model. Everytime that one of the functions of the MCP server is called, the `Tool Result` section will be displayed in the chat.
 
-![Chat Demo](./images/28ChatDemo.png)
+    ![Chat Demo](./images/28ChatDemo.png)
 
 ## Architecture Diagram
 
