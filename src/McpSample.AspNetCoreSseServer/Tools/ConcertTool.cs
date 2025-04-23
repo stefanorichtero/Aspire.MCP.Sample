@@ -7,7 +7,8 @@ namespace McpSample.AspNetCoreSseServer;
 public class ConcertTool
 {
     [McpServerTool, Description("Returns a list of concerts for a genre and city.")]
-    public List<Concert> GetConcerts(string genreName, string cityName)
+    public List<Concert> GetConcerts([Description("The musical genre (e.g. pop, rock, jazz, etc.)")] string genreName,
+        [Description("The city where the concerts take place (e.g. Berlin, Paris, etc.)")] string cityName)
     {
         var today = DateTime.Today.AddDays(3);
         var concerts = genreName.ToLower() switch
